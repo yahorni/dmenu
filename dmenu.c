@@ -988,7 +988,7 @@ usage(void)
 }
 
 void
-readxresources(void) {
+readxresources(const char given_resources[]) {
 	XrmInitialize();
 
 	char* xrm;
@@ -1001,19 +1001,19 @@ readxresources(void) {
 			fonts[0] = strdup(xval.addr);
 		else
 			fonts[0] = strdup(fonts[0]);
-		if (XrmGetResource(xdb, "dmenu.background", "*", &type, &xval))
+		if (!given_resources[0] && XrmGetResource(xdb, "dmenu.background", "*", &type, &xval))
 			colors[SchemeNorm][ColBg] = strdup(xval.addr);
 		else
 			colors[SchemeNorm][ColBg] = strdup(colors[SchemeNorm][ColBg]);
-		if (XrmGetResource(xdb, "dmenu.foreground", "*", &type, &xval))
+		if (!given_resources[1] && XrmGetResource(xdb, "dmenu.foreground", "*", &type, &xval))
 			colors[SchemeNorm][ColFg] = strdup(xval.addr);
 		else
 			colors[SchemeNorm][ColFg] = strdup(colors[SchemeNorm][ColFg]);
-		if (XrmGetResource(xdb, "dmenu.selbackground", "*", &type, &xval))
+		if (!given_resources[2] && XrmGetResource(xdb, "dmenu.selbackground", "*", &type, &xval))
 			colors[SchemeSel][ColBg] = strdup(xval.addr);
 		else
 			colors[SchemeSel][ColBg] = strdup(colors[SchemeSel][ColBg]);
-		if (XrmGetResource(xdb, "dmenu.selforeground", "*", &type, &xval))
+		if (!given_resources[3] && XrmGetResource(xdb, "dmenu.selforeground", "*", &type, &xval))
 			colors[SchemeSel][ColFg] = strdup(xval.addr);
 		else
 			colors[SchemeSel][ColFg] = strdup(colors[SchemeSel][ColFg]);
@@ -1027,6 +1027,13 @@ main(int argc, char *argv[])
 {
 	XWindowAttributes wa;
 	int i, fast = 0;
+
+    char given_resources[4] = { 0 };
+    /* 0 - normal background
+     * 1 - normal foreground
+     * 2 - selection background
+     * 3 - selection foreground
+     */
 
 	for (i = 1; i < argc; i++)
 		/* these options take no arguments */
@@ -1056,13 +1063,13 @@ main(int argc, char *argv[])
 		else if (!strcmp(argv[i], "-fn"))  /* font or font set */
 			fonts[0] = argv[++i];
 		else if (!strcmp(argv[i], "-nb"))  /* normal background color */
-			colors[SchemeNorm][ColBg] = argv[++i];
+			{ colors[SchemeNorm][ColBg] = argv[++i]; given_resources[0] = 1; }
 		else if (!strcmp(argv[i], "-nf"))  /* normal foreground color */
-			colors[SchemeNorm][ColFg] = argv[++i];
+			{ colors[SchemeNorm][ColFg] = argv[++i]; given_resources[1] = 1; }
 		else if (!strcmp(argv[i], "-sb"))  /* selected background color */
-			colors[SchemeSel][ColBg] = argv[++i];
+			{ colors[SchemeSel][ColBg] = argv[++i];  given_resources[2] = 1; }
 		else if (!strcmp(argv[i], "-sf"))  /* selected foreground color */
-			colors[SchemeSel][ColFg] = argv[++i];
+			{ colors[SchemeSel][ColFg] = argv[++i];  given_resources[3] = 1; }
 		else if (!strcmp(argv[i], "-w"))   /* embedding window id */
 			embed = argv[++i];
 		else
@@ -1080,7 +1087,7 @@ main(int argc, char *argv[])
 		die("could not get embedding window attributes: 0x%lx",
 		    parentwin);
 	drw = drw_create(dpy, screen, root, wa.width, wa.height);
-	readxresources();
+	readxresources(given_resources);
 	if (!drw_fontset_create(drw, (const char**)fonts, LENGTH(fonts)))
 		die("no fonts could be loaded.");
 
