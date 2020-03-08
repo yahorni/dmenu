@@ -999,23 +999,23 @@ readxresources(const char given_resources[]) {
 		XrmDatabase xdb = XrmGetStringDatabase(xrm);
 		XrmValue xval;
 
-		if (XrmGetResource(xdb, "dmenu.font", "*", &type, &xval))
+		if (!given_resources[0] && XrmGetResource(xdb, "dmenu.font", "*", &type, &xval))
 			fonts[0] = strdup(xval.addr);
 		else
 			fonts[0] = strdup(fonts[0]);
-		if (!given_resources[0] && XrmGetResource(xdb, "dmenu.background", "*", &type, &xval))
+		if (!given_resources[1] && XrmGetResource(xdb, "dmenu.background", "*", &type, &xval))
 			colors[SchemeNorm][ColBg] = strdup(xval.addr);
 		else
 			colors[SchemeNorm][ColBg] = strdup(colors[SchemeNorm][ColBg]);
-		if (!given_resources[1] && XrmGetResource(xdb, "dmenu.foreground", "*", &type, &xval))
+		if (!given_resources[2] && XrmGetResource(xdb, "dmenu.foreground", "*", &type, &xval))
 			colors[SchemeNorm][ColFg] = strdup(xval.addr);
 		else
 			colors[SchemeNorm][ColFg] = strdup(colors[SchemeNorm][ColFg]);
-		if (!given_resources[2] && XrmGetResource(xdb, "dmenu.selbackground", "*", &type, &xval))
+		if (!given_resources[3] && XrmGetResource(xdb, "dmenu.selbackground", "*", &type, &xval))
 			colors[SchemeSel][ColBg] = strdup(xval.addr);
 		else
 			colors[SchemeSel][ColBg] = strdup(colors[SchemeSel][ColBg]);
-		if (!given_resources[3] && XrmGetResource(xdb, "dmenu.selforeground", "*", &type, &xval))
+		if (!given_resources[4] && XrmGetResource(xdb, "dmenu.selforeground", "*", &type, &xval))
 			colors[SchemeSel][ColFg] = strdup(xval.addr);
 		else
 			colors[SchemeSel][ColFg] = strdup(colors[SchemeSel][ColFg]);
@@ -1030,11 +1030,12 @@ main(int argc, char *argv[])
 	XWindowAttributes wa;
 	int i, fast = 0;
 
-    char given_resources[4] = { 0 };
-    /* 0 - normal background
-     * 1 - normal foreground
-     * 2 - selection background
-     * 3 - selection foreground
+    char given_resources[5] = { 0 };
+    /* 0 - font
+     * 1 - normal background
+     * 2 - normal foreground
+     * 3 - selection background
+     * 4 - selection foreground
      */
 
 	for (i = 1; i < argc; i++)
@@ -1063,15 +1064,15 @@ main(int argc, char *argv[])
 		else if (!strcmp(argv[i], "-p"))   /* adds prompt to left of input field */
 			prompt = argv[++i];
 		else if (!strcmp(argv[i], "-fn"))  /* font or font set */
-			fonts[0] = argv[++i];
+			{ fonts[0] = argv[++i];                  given_resources[0] = 1; }
 		else if (!strcmp(argv[i], "-nb"))  /* normal background color */
-			{ colors[SchemeNorm][ColBg] = argv[++i]; given_resources[0] = 1; }
+			{ colors[SchemeNorm][ColBg] = argv[++i]; given_resources[1] = 1; }
 		else if (!strcmp(argv[i], "-nf"))  /* normal foreground color */
-			{ colors[SchemeNorm][ColFg] = argv[++i]; given_resources[1] = 1; }
+			{ colors[SchemeNorm][ColFg] = argv[++i]; given_resources[2] = 1; }
 		else if (!strcmp(argv[i], "-sb"))  /* selected background color */
-			{ colors[SchemeSel][ColBg] = argv[++i];  given_resources[2] = 1; }
+			{ colors[SchemeSel][ColBg] = argv[++i];  given_resources[3] = 1; }
 		else if (!strcmp(argv[i], "-sf"))  /* selected foreground color */
-			{ colors[SchemeSel][ColFg] = argv[++i];  given_resources[3] = 1; }
+			{ colors[SchemeSel][ColFg] = argv[++i];  given_resources[4] = 1; }
 		else if (!strcmp(argv[i], "-w"))   /* embedding window id */
 			embed = argv[++i];
 		else
