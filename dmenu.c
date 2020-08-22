@@ -513,8 +513,8 @@ keypress(XKeyEvent *ev)
 		case XK_y: /* paste selection */
 		case XK_Y:
 		case XK_v:
-		case XK_V:
-			XConvertSelection(dpy, (ev->state & ShiftMask) ? clip : XA_PRIMARY,
+		case XK_V: /* to switch by Shift keypress search for 'middle-mouse click' */
+			XConvertSelection(dpy, clip,
 			                  utf8, utf8, win, CurrentTime);
 			return;
 		case XK_Left:
@@ -548,6 +548,13 @@ keypress(XKeyEvent *ev)
 		case XK_l: ksym = XK_Down;  break;
 		default:
 			return;
+		}
+	} else if (ev->state & ShiftMask) {
+		switch(ksym) {
+		case XK_Insert:
+			XConvertSelection(dpy, XA_PRIMARY,
+								utf8, utf8, win, CurrentTime);
+			break;
 		}
 	}
 
